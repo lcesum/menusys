@@ -28,6 +28,7 @@ void deleteSingleCell(const std::string& itemName);
 int cin_error(void);
 int is_there_errors(int);
 void throw_warning(const std::string&);
+void printInventory(void);
 
 
 
@@ -46,9 +47,9 @@ int main(){
 		switch (cmd){
 			case 0: return 0;
 			case 1: createCell(); break;
-			case 2: std::cout << "Two" << std::endl; break;
+			case 2: printInventory(); break;
 			case 3: UpdateCell(); break;
-			case 4: deleteCell();
+			case 4: deleteCell(); break;
 			default: std::cout << "Invalid input!\n"; break;
 		}
 	}
@@ -59,7 +60,7 @@ void createCell(void){
 	int read_input = -1;
 	
 	while (read_input != 0){
-		std::cout << "there are currently " << current_slots << " slots in your inventory." << std::endl;
+		std::cout << "There are currently " << current_slots << " slots in your inventory." << std::endl;
 		std::cout << "Insert how many? \"0\" to exit" << std::endl << "> ";
 		std::cin >> read_input;
 		if (cin_error()){
@@ -80,44 +81,47 @@ void createCell(void){
 		std:: cout << "Done!" << std::endl << "Wanted slots: " << wanted_slots << std::endl;
 		wanted_slots = 0;
 	
-		//print created empty cells
-		for (const auto& pair : inventory){
-			std::cout << pair.first << ": " << pair.second << std::endl;
+		printInventory();
+	}
+	system("cls");
+	std::cout << "Going back to main menu..." << std::endl;
+}
+
+void printInventory(void){
+	std::cout << "there are currently " << current_slots << " slots in your inventory." << std::endl;
+	
+	for (const auto& pair : inventory){
+			std::cout << pair.first << ": " <<pair.second << std::endl;
 		}
-		/*
+	/*
 		 * This for loop basically says: "For every key/value pair in inventory, call it pair", where pair.first is the key (string in our example) and pair.secon is the value.
 		 *const -- SO that we read the data, not modify it.
 		 *auto -- multimap is actually std::pair<const std::string, std::vector<int>>, auto *lets compiler figure it out, lol.
 		 *& to avoid copying the pair
 		 */
-	}
-	system("cls");
-	std::cout << "Going back to main menu..." << std::endl;
 }
 
 int UpdateCell(void){
 	std::string cellName;
 	int editACell;
 	while (true){
-		for (const auto& pair : inventory){
-			std::cout << pair.first << ": " <<pair.second << std::endl;
-		}
-		std::cout << "Edit a (1) empty cell or a (2)specific cell" << std::endl << "0 to leave. " << std::endl << "> ";
+		system("cls");
+		printInventory();
+		std::cout << "Edit a (1) empty cell or a (2)specific cell" << std::endl << "\"0\" to leave. " << std::endl << "> ";
 		std::cin >> editACell;
 		if (is_there_errors(editACell))
 			continue;
 		
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		switch(editACell){
-			case 0: return 0;
+			case 0: system ("cls"); std::cout << "Returning..." << std::endl; return 0;
 			case 1: editFirstSingleEmptyCell(getWantedItemValue(), newItemName()); continue;
 			case 2: 
-				system("cls");
 				int specificEdit;
-				std::cout << "Edit a (1) Key name or (2) A value for a key?" << std::endl << "> ";
+				std::cout << "Edit a (1) item name or (2) A amount of items?" << std::endl << "> ";
 				std::cin >> specificEdit;
 				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				switch (specificEdit){
+					case 0: continue;
 					case 1:
 					editItemName(newItemName(), getItemName()); continue;
 					case 2:
@@ -129,7 +133,6 @@ int UpdateCell(void){
 				}
 			default: std::cout << "Invalid input."<< std::endl; Sleep(ONE_AND_A_HALF_SECOND);break;
 		}	
-		Sleep(ONE_SECOND);
 		system("cls");
 	}
 }
@@ -137,16 +140,18 @@ int UpdateCell(void){
 int deleteCell(){
 	int read_input;
 	while(true){
-		std::cout << "Delete (1) single cell, (2) all Empty cells or (3) All.";
+		printInventory();
+		std::cout << "Delete (1) single cell, (2) all Empty cells or (3) All. \"0\" To exit." << std::endl;
 		std::cin >> read_input;
 		if (is_there_errors(read_input))
 			continue;
 		switch(read_input){
 			case 0: return 0;
 			case 1: deleteSingleCell(getItemName()); break;
-			case 2: size_t removed = inventory.erase("Empty cell"); 
+			case 2:{ size_t removed = inventory.erase("Empty cell"); 
 					current_slots -= removed;
 					std::cout << "Done!"; return 0;
+			}
 			case 3: inventory.clear();
 					current_slots = 0;
 					wanted_slots = 0;
