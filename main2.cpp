@@ -37,7 +37,7 @@ int main(){
 	std::cout << "Inventory management system.";
 	while (1){
 		Sleep(ONE_SECOND);
-		std::cout << "\nCommands:\n1. Create cell\n2. Read\n3. Update cell\n4. Delete cell.\nEnter \"0\" to terminate program.\n>";
+		std::cout << "\nCommands:\n1. Create cell\n2. Read\n3. Update cell\n4. Delete cell.\nEnter \"0\" to terminate program.\n> ";
 		std::cin >> cmd;
 		if (cin_error())
 			continue;
@@ -117,7 +117,7 @@ int UpdateCell(void){
 			case 1: editFirstSingleEmptyCell(getWantedItemValue(), newItemName()); continue;
 			case 2: 
 				int specificEdit;
-				std::cout << "Edit a (1) item name or (2) A amount of items?" << std::endl << "> ";
+				std::cout << "Edit a (1) item name or (2) amount of items" << std::endl << "> ";
 				std::cin >> specificEdit;
 				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				switch (specificEdit){
@@ -141,20 +141,23 @@ int deleteCell(){
 	int read_input;
 	while(true){
 		printInventory();
-		std::cout << "Delete (1) single cell, (2) all Empty cells or (3) All. \"0\" To exit." << std::endl;
+		std::cout << "Delete (1) single cell, (2) all Empty cells or (3) All. \"0\" To exit." << std::endl << "> ";
 		std::cin >> read_input;
 		if (is_there_errors(read_input))
 			continue;
 		switch(read_input){
 			case 0: return 0;
 			case 1: deleteSingleCell(getItemName()); break;
-			case 2:{ size_t removed = inventory.erase("Empty cell"); 
-					current_slots -= removed;
+			case 2:{ size_t removed = inventory.erase("Empty cell"); //sizeof inventory as
+					current_slots -= removed;				//n amt of Empty cells are removed
+					system("cls");
+					printInventory();
 					std::cout << "Done!"; return 0;
 			}
-			case 3: inventory.clear();
+			case 3: inventory.clear();						
 					current_slots = 0;
 					wanted_slots = 0;
+					system("cls");
 					std::cout << "Done!"; return 0;
 		}
 	}
@@ -166,8 +169,11 @@ int cin_error(void){
 	} //runs if input fais
 	system("cls");
 	std::cout << "Invalid input! Please enter an integer.\n";
-	std::cin.clear();
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	std::cin.clear();		//clears failed state of cin.
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');  
+	//std::cin has leftover '\n' when ran smoothly, and when ran with std::getline(),
+	//the former stops at exactly the mention of \'n', thus breaking our code.'
+	//This specifically discards up to the newline character or the maximum possible stream size, ensuring the newline is gone.
 	Sleep(ONE_AND_A_HALF_SECOND);
 	return 1;
 }
@@ -183,14 +189,14 @@ void editFirstSingleEmptyCell(int emptyCellValue, const std::string& newName){
 	
 }
 
-std::string getItemName(){
+std::string getItemName(){		//parameter func
 	std::string cellName;
 	std::cout << "Enter name of item you want to change: ";
 	std::getline(std::cin, cellName);
 	return cellName;
 }
 
-int getWantedItemValue(){
+int getWantedItemValue(){		//parameter func
 	int WantedItemValue;
 	std::cout << "Change amt: ";
 	std::cin >> WantedItemValue;
@@ -198,9 +204,9 @@ int getWantedItemValue(){
 	return WantedItemValue;
 }
 void editItemValue(int toAmt, const std::string& itemName){
-	auto range = inventory.equal_range(itemName);		//
+	auto range = inventory.equal_range(itemName);		//finds exact match
 		if (range.first != range.second){
-			range.first -> second = toAmt;
+			range.first -> second = toAmt;				//changes value of value with user's
 		}	else throw_warning(itemName);
 }
 
@@ -212,22 +218,22 @@ std::string newItemName(){
 	
 }
 
-void editItemName(const std::string& newName, const std::string& itemName){
-	auto item = inventory.find(itemName);
-	if (item != inventory.end()){
-		int oldValue = item->second;
-		inventory.erase(item);
-		inventory.insert({newName, oldValue});
+void editItemName(const std::string& newName, const std::string& itemName){	
+	auto item = inventory.find(itemName);			//gets itemName input and stops at
+	if (item != inventory.end()){					
+		int oldValue = item->second;				//first exact match. Saves the value,
+		inventory.erase(item);						//deletes entire cell, and replaces
+		inventory.insert({newName, oldValue});		//with a new one with old value.
 	}	else throw_warning(itemName);
 }
 
-void throw_warning(const std::string& item_name){
-	system("cls"); 
+void throw_warning(const std::string& item_name){	//runs if no matching key exists in multimap 
+	system("cls"); 									//with user input
 	std::cout<< "Warning! \""<< item_name << "\" does not exist. Check spelling."<<std::endl;
 	Sleep(ONE_AND_A_HALF_SECOND);
 }
 
-int is_there_errors(int input){
+int is_there_errors(int input){						//finds cin or type errors
 	if (cin_error())
 		return 1;
 	else if (input < 0){
@@ -238,8 +244,8 @@ int is_there_errors(int input){
 	return 0;
 }
 
-void deleteSingleCell(const std::string& itemName){
-	auto item = inventory.find(itemName);
+void deleteSingleCell(const std::string& itemName){ //finds item name and deletes first 
+	auto item = inventory.find(itemName);			//one that matches
 	if (item != inventory.end()){
 		inventory.erase(item);
 		current_slots--;
